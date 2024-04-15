@@ -173,6 +173,7 @@ dtbo-$(CONFIG_ARCH_BCM2835) += \
 	midi-uart4.dtbo \
 	midi-uart4-pi5.dtbo \
 	midi-uart5.dtbo \
+	uconsole.dtbo \
 	minipitft13.dtbo \
 	miniuart-bt.dtbo \
 	mipi-dbi-spi.dtbo \

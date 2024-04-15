@@ -1128,6 +1128,21 @@ static int axp20x_power_off(struct sys_off_data *data)
 	return NOTIFY_DONE;
 }
 
+static int axp20x_power_off_handler(struct sys_off_data *data)
+{
+	struct axp20x_dev *device = data->cb_data;
+
+	if (device->variant == AXP288_ID)
+		return NOTIFY_DONE;
+
+	regmap_write(device->regmap, AXP20X_OFF_CTRL, AXP20X_OFF);
+
+	/* Give capacitors etc. time to drain to avoid kernel panic msg. */
+	mdelay(500);
+
+	return NOTIFY_DONE;
+}
+
 int axp20x_match_device(struct axp20x_dev *axp20x)
 {
 	struct device *dev = axp20x->dev;
@@ -1331,7 +1346,11 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
 					      SYS_OFF_MODE_POWER_OFF,
 					      SYS_OFF_PRIO_DEFAULT,
 					      axp20x_power_off, axp20x);
-
+						  
+	ret = devm_register_power_off_handler(axp20x->dev, axp20x_power_off_handler, axp20x);
+	if (ret) {
+		dev_warn(axp20x->dev, "Failed to register power off handler! (%d)", ret);
+	}
 	dev_info(axp20x->dev, "AXP20X driver loaded\n");
 
 	return 0;
